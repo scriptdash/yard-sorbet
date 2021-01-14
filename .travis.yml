@@ -1,12 +1,25 @@
 ---
-language: ruby
-cache: bundler
-rvm:
-  - 2.5
-  - 2.6
-  - 2.7
-  - 3.0
-  - ruby-head
-jobs:
+matrix:
+  include:
+    - language: python
+      before_script:
+        - pip install yamllint
+      script:
+        - yamllint -s .
+    - language: ruby
+      cache: bundler
+      rvm: 2.5
+    - language: ruby
+      cache: bundler
+      rvm: 2.6
+    - language: ruby
+      cache: bundler
+      rvm: 2.7
+    - language: ruby
+      cache: bundler
+      rvm: 3.0
+    - language: ruby
+      cache: bundler
+      rvm: ruby-head
   allow_failures:
     - rvm: ruby-head
