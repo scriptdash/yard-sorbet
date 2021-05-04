@@ -153,6 +153,15 @@ class SigParams
   def blk_method(&blk); nil; end
 
   sig do
+    params(
+      one: String, # First param
+      # Second param
+      two: Number,
+    ).void
+  end
+  def inline_param_doc_method(one, two); end
+
+  sig do
     override
     .params(block: T.proc.params(
       model: EmailConversation,

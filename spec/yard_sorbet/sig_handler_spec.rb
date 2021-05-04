@@ -185,6 +185,14 @@ RSpec.describe YARDSorbet::SigHandler do
       expect(node.tag(:return).types).to eq(['void'])
     end
 
+    it 'param with inline comments' do
+      node = YARD::Registry.at('SigParams#inline_param_doc_method')
+      one_tag = node.tags.find { |t| t.name == 'one' }
+      expect(one_tag.text).to eql('First param')
+      two_tag = node.tags.find { |t| t.name == 'two' }
+      expect(two_tag.text).to eql('Second param')
+    end
+
     it 'T::Array' do
       node = YARD::Registry.at('CollectionSigs#collection')
       param_tag = node.tags.find { |t| t.name == 'arr' }
