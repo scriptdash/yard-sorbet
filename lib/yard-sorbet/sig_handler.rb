@@ -6,10 +6,16 @@ class YARDSorbet::SigHandler < YARD::Handlers::Ruby::Base
   extend T::Sig
   handles :class, :module, :singleton_class?
 
+  # A struct that holds the parsed contents of a param extracted from a Sorbet type signature.
+  class ParsedParam < T::Struct
+    prop :types, T::Array[String], default: []
+    prop :docstring, String
+  end
+
   # A struct that holds the parsed contents of a Sorbet type signature
   class ParsedSig < T::Struct
     prop :abstract, T::Boolean, default: false
-    prop :params, T::Hash[String, T::Array[String]], default: {}
+    prop :params, T::Hash[String, ParsedParam], default: {}
     prop :return, T.nilable(T::Array[String])
   end
 
@@ -18,7 +24,7 @@ class YARDSorbet::SigHandler < YARD::Handlers::Ruby::Base
   SIG_EXCLUDES = T.let(%i[array hash].freeze, T::Array[Symbol])
   SIG_NODE_TYPES = T.let(%i[call fcall vcall].freeze, T::Array[Symbol])
 
-  private_constant :ParsedSig, :PARAM_EXCLUDES, :PROCESSABLE_NODES, :SIG_EXCLUDES, :SIG_NODE_TYPES
+  private_constant :ParsedParam, :ParsedSig, :PARAM_EXCLUDES, :PROCESSABLE_NODES, :SIG_EXCLUDES, :SIG_NODE_TYPES
 
   sig { void }
   def process
@@ -64,8 +70,8 @@ class YARDSorbet::SigHandler < YARD::Handlers::Ruby::Base
     enhance_tag(docstring, :abstract, parsed_sig)
     enhance_tag(docstring, :return, parsed_sig)
     if method_node.type != :command
-      parsed_sig.params.each do |name, types|
-        enhance_param(docstring, name, types)
+      parsed_sig.params.each do |name, parsed_param|
+        enhance_param(docstring, name, parsed_param)
       end
     end
     method_node.docstring = docstring.to_raw
@@ -73,14 +79,14 @@ class YARDSorbet::SigHandler < YARD::Handlers::Ruby::Base
     sig_node.docstring = nil
   end
 
-  sig { params(docstring: YARD::Docstring, name: String, types: T::Array[String]).void }
-  private def enhance_param(docstring, name, types)
+  sig { params(docstring: YARD::Docstring, name: String, parsed_param: ParsedParam).void }
+  private def enhance_param(docstring, name, parsed_param)
     tag = docstring.tags.find { |t| t.tag_name == 'param' && t.name == name }
     if tag
       docstring.delete_tag_if { |t| t == tag }
-      tag.types = types
+      tag.types = parsed_param.types
     else
-      tag = YARD::Tags::Tag.new(:param, '', types, name)
+      tag = YARD::Tags::Tag.new(:param, parsed_param.docstring, parsed_param.types, name)
     end
     docstring.add_tag(tag)
   end
@@ -116,8 +122,11 @@ class YARDSorbet::SigHandler < YARD::Handlers::Ruby::Base
         bfs_traverse(sibling, exclude: PARAM_EXCLUDES) do |p|
           if p.type == :assoc
             param_name = p.children.first.source[0...-1]
-            types = YARDSorbet::SigToYARD.convert(p.children.last)
-            parsed.params[param_name] = types
+            parsed_param = ParsedParam.new(
+              types: YARDSorbet::SigToYARD.convert(p.children.last),
+              docstring: p.docstring || ''
+            )
+            parsed.params[param_name] = parsed_param
           end
         end
       elsif n.source == 'returns' && !found_return
