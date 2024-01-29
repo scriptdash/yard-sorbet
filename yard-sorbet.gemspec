@@ -11,28 +11,22 @@ Gem::Specification.new do |spec|
   spec.license = 'Apache-2.0'
 
   spec.summary = 'Create YARD docs from Sorbet type signatures'
-  spec.description = <<~DESC
-    A YARD plugin that incorporates Sorbet type information
-  DESC
+  spec.description = 'A YARD plugin that incorporates Sorbet type information'
   spec.homepage = 'https://github.com/dduugg/yard-sorbet'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.5.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
 
-  spec.metadata['homepage_uri'] = spec.homepage
-  spec.metadata['source_code_uri'] = spec.homepage
-  spec.metadata['changelog_uri'] = 'https://github.com/dduugg/yard-sorbet/blob/master/CHANGELOG.md'
+  spec.metadata = {
+    'bug_tracker_uri' => "#{spec.homepage}/issues",
+    'changelog_uri' => "#{spec.homepage}/blob/main/CHANGELOG.md",
+    'documentation_uri' => 'https://dduugg.github.io/yard-sorbet/',
+    'homepage_uri' => spec.homepage,
+    'rubygems_mfa_required' => 'true',
+    'source_code_uri' => spec.homepage,
+    'wiki_uri' => "#{spec.homepage}/wiki"
+  }
 
-  spec.files = `git ls-files -z -- lib/*`.split("\x0") + ['LICENSE']
+  spec.files = Dir['lib/**/*', 'LICENSE']
 
-  spec.add_development_dependency 'codecov'
-  spec.add_development_dependency 'rake', '~> 13.0'
-  spec.add_development_dependency 'rspec', '~> 3.10'
-  spec.add_development_dependency 'rubocop', '~> 1.13.0'
-  spec.add_development_dependency 'rubocop-performance', '~> 1.11.0'
-  spec.add_development_dependency 'rubocop-rake', '~> 0.5.1'
-  spec.add_development_dependency 'rubocop-rspec', '~> 2.3.0'
-  spec.add_development_dependency 'rubocop-sorbet', '~> 0.6.0'
-  spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'sorbet', '~> 0.5.6193'
-  spec.add_runtime_dependency 'sorbet-runtime', '>= 0.5.5845'
-  spec.add_runtime_dependency 'yard', '>= 0.9.16'
+  spec.add_runtime_dependency 'sorbet-runtime'
+  spec.add_runtime_dependency 'yard'
 end

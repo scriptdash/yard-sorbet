@@ -1,0 +1,373 @@
+# typed: false
+# frozen_string_literal: true
+
+class Bar; end
+class Boolean; end
+class Custom; end
+class Custom1; end
+class Custom2; end
+class Custom3; end
+class Custom4; end
+class EmailConversation; end
+class Foo; class Bar; end; end
+
+class B
+  def sig_override_void; end
+end
+
+class Signatures < B
+  # comment sig_void
+  sig {void}
+  def sig_void; end
+
+  # comment sig_override_void
+  sig {override.void}
+  def sig_override_void; end
+
+  # comment sig_arguments
+  sig {params(a: Integer, b: Integer).void}
+  def sig_arguments(a, b); end
+
+  # comment sig_multiline_arguments
+  sig do
+    params(
+      a: Integer,
+      b: Integer,
+    ).void
+  end
+  def sig_multiline_arguments(a, b); end
+
+  # comment sig_multiline_comments
+  # comment sig_multiline_comments
+  sig {void}
+  def sig_multiline_comments; end
+
+  # comment sig_class_method
+  sig {void}
+  def self.sig_class_method; end
+
+  class << self
+    # comment reopening
+    sig {void}
+    def reopening; end
+  end
+end
+
+class Subclass < Signatures
+  # with subclass
+  sig {void}
+  def method; end
+end
+
+class ClassWithCode
+  # bar
+  sig {void}
+  def bar; end
+
+  puts 'foobar'
+
+  # foo
+  sig {void}
+  def foo; end
+end
+
+class Outer
+  # outer method
+  sig {void}
+  def outer; end
+
+  class Inner
+    # inner method
+    sig {void}
+    def inner; end
+  end
+
+  # outer method 2
+  sig {void}
+  def outer2; end
+end
+
+module MyModule
+  # module function
+  sig {void}
+  def self.foo; end
+
+  # module instance method
+  sig {void}
+  def bar; end
+end
+
+class SigReturn
+  # attr has trailing comment
+  sig {returns(String)}
+  attr_reader :attr_contains_comment # rubocop:disable ...
+
+  sig {returns(Integer)}
+  def one; 1; end
+
+  # @deprecated do not use
+  sig {returns(Integer)}
+  def two; 2; end
+
+  # @return [Numeric]
+  sig {returns(Integer)}
+  def three; 3; end
+
+  # @return the number four
+  sig {returns(Integer)}
+  def four; 4; end
+
+  sig {params(int: Integer).returns(Float)}
+  def plus_one(int); int + 1.0; end
+
+  sig {params(a: Numeric, b: Numeric).returns(T.any(Numeric, String))}
+  def plus(a, b); a + b; end
+
+  sig {void}
+  def void_method; end
+
+  # method definition contains comment
+  sig {void}
+  def method_definition_contains_comment # rubocop:disable ...
+  end
+
+  # class method definition contains comment
+  sig {void}
+  def self.class_method_definition_contains_comment # rubocop:disable ...
+  end
+
+  sig {returns Integer}
+  def no_parens; end
+end
+
+class SigAbstract
+  abstract!
+
+  sig {abstract.void}
+  def one; end
+
+  # @abstract subclass must implement
+  sig {abstract.returns(NilClass)}
+  def two; end
+
+  sig {abstract.returns(Boolean)}
+  def with_return; end
+
+  sig {abstract.void}
+  def with_void; end
+end
+
+class A
+  def impl_blk_method(&block); end
+end
+
+class SigParams < A
+  # @param bar the thing
+  # @param baz [Object] the other thing
+  sig {params(bar: T.any(String, Symbol), baz: T.nilable(String)).void}
+  def foo(bar, baz); end
+
+  sig do
+    params(
+      blk: T.proc.params(arg0: String).returns(T::Array[Hash])
+    )
+    .returns(NilClass)
+  end
+  def blk_method(&blk); nil; end
+
+  sig do
+    params(
+      one: String, # First param
+      # Second param
+      two: Number,
+    ).void
+  end
+  def inline_param_doc_method(one, two); end
+
+  sig do
+    override
+    .params(block: T.proc.params(
+      model: EmailConversation,
+      mutator: T.untyped,
+    ).void)
+    .void
+  end
+  def impl_blk_method(&block); end
+end
+
+class CollectionSigs
+  sig {params(arr: T::Array[String]).void}
+  def collection(arr); end
+
+  sig {params(arr: T::Array[T::Array[String]]).void}
+  def nested_collection(arr); end
+
+  sig {params(arr: T::Array[T.any(String, Symbol)]).returns(TrueClass)}
+  def mixed_collection(arr); true; end
+
+  sig {returns(T::Hash[String, Symbol])}
+  def hash_method; end
+
+  sig{params(arr: Custom[String]).void}
+  def custom_collection(arr); end
+
+  sig{params(arr: T::Array[Custom1[Custom2[String, Integer, T::Boolean], T.any(Custom3[String], Custom4[Integer])]]).void}
+  def nested_custom_collection(arr); end
+
+  sig{params(arr: Custom[T.all(T.any(Foo, Bar), T::Array[String], T::Hash[Integer, Symbol])]).void}
+  def custom_collection_with_inner_nodes(arr); end
+
+  sig {returns([String, Integer])}
+  def fixed_array; ['', 0]; end
+
+  # @!visibility protected
+  sig {returns({foo: T.nilable(String)})}
+  def fixed_hash; {foo: nil}; end
+
+  sig do
+    params(
+      tos_acceptance: T.nilable({
+        date: Integer,
+        ip: String,
+        user_agent: T.nilable(String),
+        signator: T.nilable(String),
+        iovation_blackbox: T.nilable(String),
+      })
+    )
+    .returns(NilClass)
+  end
+  def fixed_param_hash(tos_acceptance); nil; end
+end
+
+class VariousTypedSigs
+  sig { returns(String) }
+  def arg_paren; end
+
+  sig { returns([String]) }
+  def array; end
+
+  sig { returns(T.all(Foo, Bar)) }
+  def call_T_all; end
+
+  sig { returns(T.attached_class) }
+  def self.call_T_attached_class; end
+
+  sig { returns(T.class_of(String)) }
+  def call_T_class_of; String; end
+
+  sig { returns(T.enum) }
+  def call_T_enum; end
+
+  sig { returns(T.noreturn) }
+  def call_T_noreturn; end
+
+  sig { returns(T.self_type) }
+  def call_T_self_type; end
+
+  sig { returns(T.type_parameter) }
+  def call_T_type_parameter; end
+
+  sig { returns(T.untyped) }
+  def call_T_untyped; end
+
+  sig { returns(T.any(Integer, String)) }
+  def call_T_any; end
+
+  sig { returns(T.nilable(String)) }
+  def call_T_nilable; end
+
+  sig { returns(Foo::Bar) }
+  def const_path_ref; end
+
+  sig { returns( {foo: Integer} ) }
+  def hash; end
+
+  sig { returns(FalseClass) }
+  def var_ref_false_class; end
+
+  sig { returns(NilClass) }
+  def var_ref_nil_class; end
+
+  sig { returns(TrueClass) }
+  def var_ref_true_class; end
+
+  sig { returns(Foo) }
+  def var_ref; end
+
+  sig { returns(::Foo) }
+  def top_const_ref; end
+
+  sig { params(props: T::Array[String]).returns(T::Array[[String, T.nilable(String)]]) }
+  private def nested_array_return(props); end
+end
+
+class AttrSigs
+  sig {returns(String)}
+  attr_accessor 'my_accessor'
+
+  sig {returns(Integer)}
+  attr_reader :my_reader
+
+  sig {params(my_writer: T.nilable(Symbol)).returns(T.nilable(Symbol))}
+  attr_writer :my_writer
+
+  sig {params(with_parens: T::Boolean).returns(T::Boolean)}
+  attr_writer(:with_parens)
+end
+
+class SigInlineVisibility
+  sig { params(next_statement: T.nilable(YARD::Parser::Ruby::AstNode)).returns(T::Boolean) }
+  private def boolean_method?(next_statement)
+    true
+  end
+end
+
+module Cask; class DSL; end; end
+class BlockDSL
+  module PageWithURL; end
+
+  sig {
+    params(
+      uri:   T.nilable(T.any(URI::Generic, String)),
+      dsl:   T.nilable(Cask::DSL),
+      block: T.proc.params(arg0: T.all(String, PageWithURL)).returns(T.untyped),
+    ).void
+  }
+  def initialize(uri, dsl: nil, &block)
+    @uri = uri
+    @dsl = dsl
+    @block = block
+  end
+end
+
+class Nodes
+  INT = Integer
+
+  sig { returns(INT) }
+  def returns_const; 1; end
+end
+
+module Merge
+  class A
+    # annotated attr_accessor
+    attr_accessor :a_foo
+
+    attr_reader :a_bar
+
+    attr_writer :a_baz
+
+    # The foo instance method for A
+    def foo; end
+
+    # The bar singleton method for A
+    def self.bar(a); end
+
+    private def baz; end
+
+    # @return the result
+    def bat; end
+
+    # old doctsring
+    def xyz; end
+  end
+end
