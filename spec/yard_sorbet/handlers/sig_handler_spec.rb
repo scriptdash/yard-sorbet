@@ -434,6 +434,18 @@ RSpec.describe YARDSorbet::Handlers::SigHandler do
       node = YARD::Registry.at('Nodes#returns_const')
       expect(node.tag(:return).types).to eq(['INT'])
     end
+
+    it 'param with inline comments to right of param' do
+      node = YARD::Registry.at('SigParams#inline_param_doc_method')
+      one_tag = node.tags.find { |t| t.name == 'one' }
+      expect(one_tag.text).to eql('First param')
+    end
+
+    it 'param with inline comments above param' do
+      node = YARD::Registry.at('SigParams#inline_param_doc_method')
+      two_tag = node.tags.find { |t| t.name == 'two' }
+      expect(two_tag.text).to eql('Second param')
+    end
   end
 
   describe 'attributes' do
