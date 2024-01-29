@@ -1,0 +1,40 @@
+# typed: true
+# frozen_string_literal: true
+
+# Comment on PersonStruct
+class PersonStruct < T::Struct
+  # A name
+  const :name, String
+  # An age
+  const :age, Integer
+  # An optional
+  const :optional, T.nilable(String)
+  # A writable
+  prop :writable, String
+  const :mystery, T.untyped
+  prop :not_mutable, Integer, default: 0, immutable: true
+end
+
+class SpecializedPersonStruct < T::Struct
+  const :special, String
+
+  # This is a special intializer
+  # @param special a very special param
+  # @return an initialized struct
+  def initialize(special:)
+    raise ArgumentError.new("bad human") if special != "special"
+    super
+  end
+end
+
+class DefaultPersonStruct < T::Struct
+  # This has a default
+  const :defaulted, String, default: 'hello'
+end
+
+# Symbols that will cause the ruby lexer to capture something other than an :ident
+# @see https://bugs.ruby-lang.org/issues/6306
+class ExceptionalPersonStruct < T::Struct
+  const :end, String
+  const :Foo, String
+end

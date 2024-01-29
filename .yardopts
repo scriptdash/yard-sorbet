@@ -1,3 +1,12 @@
---exclude sorbet
---exclude vendor
+--load yard/ignore_monkey_patch_mixins.rb
+--load yard/magic_comment_handler.rb
+--main README.md
+--markup-provider=redcarpet
+--markup=markdown
+--private
 --plugin sorbet
+lib/**/*.rb
+-
+CHANGELOG.md
+LICENSE
+README.md
